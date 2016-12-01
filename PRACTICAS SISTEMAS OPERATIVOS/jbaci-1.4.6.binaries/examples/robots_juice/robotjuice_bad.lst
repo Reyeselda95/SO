@@ -1,0 +1,68 @@
+BACI System: C-- to PCODE Compiler, 10/03/2010
+Source file: C:\programming\jbaci\examples\robots_juice\robotjuice_bad.cm  Sun Mar 21 19:53:46 2010
+ line  pc
+   1    0  #include "../gdefs.cm"
+>   1    0  // Constants for jBACI graphcs
+>   2    0  const
+>   3    0     int RED   = 1; int BLACK   = 2; int BLUE  = 3; int YELLOW = 4;
+>   4    0     int GREEN = 5; int MAGENTA = 6; int WHITE = 7;
+>   5    0     
+>   6    0     int CIRCLE         = 1; 
+>   7    0     int LINE           = 2; 
+>   8    0     int RECTANGLE      = 3; 
+>   9    0     int TRIANGLE       = 4; 
+>  10    0     int ANIMAGE        = 5;
+>  11    0     int RNDRECT 		  = 6;
+>  12    0     int LINE_CIRCLE    = 21; 
+>  13    0     int LINE_RECTANGLE = 22; 
+>  14    0     int LINE_TRIANGLE  = 23; 
+>  15    0     int LINE_RNDRECT   = 24;
+>  16    0     int NUMBER_BOX     = 25;
+>  17    0     
+>  18    0  
+Returning to file C:\programming\jbaci\examples\robots_juice\robotjuice_bad.cm
+   2    0  
+   3    0  binarysem s=1;
+   4    0  int sweet=0;
+   5    0  
+   6    0  atomic int taste_glass_of_water(int id) {
+   7    0  	cout << id << " tastes the water\n";
+   8    3  	cout << "sugar=" << sweet << endl;
+   9    7  	return sweet;
+  10   11  }
+  11   12  atomic void add_sugar(int id) {
+  12   12  	cout << id << " add sugar to water\n";
+  13   15  	++sweet;
+  14   20  	cout << "sugar=" << sweet << endl;
+  15   24  }
+  16   25  atomic void go_to_kitchen(int id) {
+  17   25  	cout << id << " going to kitchen\n";
+  18   28  }
+  19   29  atomic void take_sugar(int id) {
+  20   29  	cout << id << " takes sugar\n";
+  21   32  }
+  22   33  atomic void go_to_glass(int id) {
+  23   33  	cout << id << " go back to glass\n";
+  24   36  }
+  25   37  void robot(int id) {	
+  26   37  	int t=0;
+  27   40  	t=taste_glass_of_water(id);
+  28   46  	if (t==0) {
+  29   50  		go_to_kitchen(id);
+  30   54  		take_sugar(id);
+  31   58  		go_to_glass(id);
+  32   62  		// Option Two: Unlock 2 statements
+  33   62  		t=taste_glass_of_water(id);
+  34   68  		if (t==0) // remember: if and its true statement can be interwoven! 
+  35   72  			add_sugar(id);
+  36   76  		
+  37   76  	}
+  38   76  	cout << id << " finished\n";
+  39   79  }
+  40   80  
+  41   80  void main() {
+  42   81  	cobegin {
+  43   82  		robot(1);
+  44   86  		robot(2);
+  45   90  	}
+  46   91  }

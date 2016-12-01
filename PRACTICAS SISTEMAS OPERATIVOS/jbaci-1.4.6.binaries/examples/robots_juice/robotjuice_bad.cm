@@ -1,0 +1,46 @@
+#include "../gdefs.cm"
+
+binarysem s=1;
+int sweet=0;
+
+atomic int taste_glass_of_water(int id) {
+	cout << id << " tastes the water\n";
+	cout << "sugar=" << sweet << endl;
+	return sweet;
+}
+atomic void add_sugar(int id) {
+	cout << id << " add sugar to water\n";
+	++sweet;
+	cout << "sugar=" << sweet << endl;
+}
+atomic void go_to_kitchen(int id) {
+	cout << id << " going to kitchen\n";
+}
+atomic void take_sugar(int id) {
+	cout << id << " takes sugar\n";
+}
+atomic void go_to_glass(int id) {
+	cout << id << " go back to glass\n";
+}
+void robot(int id) {	
+	int t=0;
+	t=taste_glass_of_water(id);
+	if (t==0) {
+		go_to_kitchen(id);
+		take_sugar(id);
+		go_to_glass(id);
+		// Option Two: Unlock 2 statements
+		t=taste_glass_of_water(id);
+		if (t==0) // remember: if and its true statement can be interwoven! 
+			add_sugar(id);
+		
+	}
+	cout << id << " finished\n";
+}
+
+void main() {
+	cobegin {
+		robot(1);
+		robot(2);
+	}
+}

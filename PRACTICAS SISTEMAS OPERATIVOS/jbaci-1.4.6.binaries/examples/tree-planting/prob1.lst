@@ -1,0 +1,114 @@
+BACI System: C-- to PCODE Compiler, 10/03/2010
+Source file: C:\programming\jbaci\examples\tree-planting\prob1.cm  Thu Mar 25 22:07:49 2010
+ line  pc
+   1    0  #include "../gdefs.cm"
+>   1    0  // Constants for jBACI graphcs
+>   2    0  const
+>   3    0     int RED   = 1; int BLACK   = 2; int BLUE  = 3; int YELLOW = 4;
+>   4    0     int GREEN = 5; int MAGENTA = 6; int WHITE = 7;
+>   5    0     
+>   6    0     int CIRCLE         = 1; 
+>   7    0     int LINE           = 2; 
+>   8    0     int RECTANGLE      = 3; 
+>   9    0     int TRIANGLE       = 4; 
+>  10    0     int ANIMAGE        = 5;
+>  11    0     int RNDRECT 		  = 6;
+>  12    0     int LINE_CIRCLE    = 21; 
+>  13    0     int LINE_RECTANGLE = 22; 
+>  14    0     int LINE_TRIANGLE  = 23; 
+>  15    0     int LINE_RNDRECT   = 24;
+>  16    0     int NUMBER_BOX     = 25;
+>  17    0     
+>  18    0  
+Returning to file C:\programming\jbaci\examples\tree-planting\prob1.cm
+   2    0  const int GRASS_ICON     =10;
+   3    0  const int FIRST_HOLE_ICON=20;
+   4    0  const int DIG_ICON       =100; 
+   5    0  const int PLANT_ICON     =101; 
+   6    0  const int COVER_ICON     =102;
+   7    0  
+   8    0  semaphore s_plant = 0;
+   9    0  semaphore s_dig = 0;
+  10    0  binarysem s=1;
+  11    0  
+  12    0  const int SZ=64;
+  13    0  const int max_holes = 12;
+  14    0  int to_dig   = 0;
+  15    0  int to_plant = 0;
+  16    0  int to_cover = 0;
+  17    0  
+  18    0  int holes_y;
+  19    0  int dig_y;
+  20    0  int plant_y;
+  21    0  int cover_y;
+  22    0  int dx = SZ;
+  23    0  int x[3];
+  24    0  
+  25    0  void dig() {	
+  26    0  	int on_hole;
+  27    0  	while (to_dig>0) {
+  28    4  		//wait(s); // Critical Section
+  29    4  		--to_dig;
+  30    9  		++to_plant;
+  31   14  		moveby(DIG_ICON, dx, 0);		
+  32   18  		on_hole=(x[0]-dx)/dx;
+  33   28  		changecolor(FIRST_HOLE_ICON+on_hole, BLUE); // Turn Hole To Status: Digged
+  34   33  		x[0]=x[0]+dx;
+  35   43  		cout << "finished digging\n";
+  36   44  		//signal(s);
+  37   44  		//signal(s_dig);
+  38   44  	}
+  39   45  }
+  40   46  
+  41   46  void plant() {
+  42   46  	int on_hole;
+  43   46  	while ((to_dig>0) || (to_plant>0)) {
+  44   54                  //wait(s_dig);
+  45   54  		//wait(s); // Critical Section
+  46   54  		--to_plant;
+  47   59  		++to_cover;
+  48   64  		moveby(PLANT_ICON, dx, 0);
+  49   68  		on_hole=(x[1]-dx)/dx;
+  50   78  		changecolor(FIRST_HOLE_ICON+on_hole, MAGENTA); // Turn Hole To Status: Planted
+  51   83  		x[1]=x[1]+dx;
+  52   93  		cout << "finished planting\n";
+  53   94  		//signal(s);
+  54   94  		//signal(s_plant);
+  55   94  	}
+  56   95  }
+  57   96  
+  58   96  void cover() {
+  59   96  	int on_hole;
+  60   96  	while ((to_dig>0) || (to_plant>0) || (to_cover>0)) {
+  61  108  		//wait(s_plant);
+  62  108  		//wait(s); // Critical Section
+  63  108  		--to_cover;
+  64  113  		moveby(COVER_ICON, dx, 0);
+  65  117  		on_hole=(x[2]-dx)/dx;
+  66  127  		changecolor(FIRST_HOLE_ICON+on_hole, GREEN); // Turn Hole To Status: Covered
+  67  132  		x[2]=x[2]+dx;
+  68  142  		cout << "finished covering\n";
+  69  143  		//signal(s);
+  70  143  	}
+  71  144  }
+  72  145  
+  73  145  void main() {
+  74  146  	int i=0;
+  75  149  	holes_y = 64*4;
+  76  154  	for (i=0; i<3; ++i) x[i]=dx;
+  77  174  	to_dig = max_holes;
+  78  177  	dig_y = 64*4-SZ;
+  79  184  	plant_y = dig_y-SZ;
+  80  189  	cover_y = plant_y-SZ;
+  81  194  	create(GRASS_ICON, ANIMAGE, 0, dx+dx-15, dx-10, -1, -1);
+  82  210  	for (i=0; i<to_dig; ++i) 
+  83  224  		create(FIRST_HOLE_ICON+i, CIRCLE, BLACK, dx+(i+1)*dx, holes_y, SZ, SZ);
+  84  241  	create(DIG_ICON,   ANIMAGE, 0, dx, dig_y, -1, -1);
+  85  251  	create(PLANT_ICON, ANIMAGE, 0, dx, plant_y, -1, -1);
+  86  261  	create(COVER_ICON, ANIMAGE, 0, dx, cover_y, -1, -1);
+  87  271  	cobegin {
+  88  272  		dig();
+  89  275  		plant();
+  90  278  		cover();		
+  91  281  	}
+  92  282  }

@@ -1,0 +1,56 @@
+#include "../gdefs.cm"
+const int ICON_KITCHEN=1;
+const int ICON_CUPWATER=2;
+const int ICON_ROBOT1=3;
+const int ICON_ROBOT2=4;
+const int SZ=96;
+
+binarysem s=1;
+int sweet=0;
+
+atomic int taste_glass_of_water(int id) {
+	cout << id << " tastes the water\n";
+	cout << "sugar=" << sweet << endl;
+	return sweet;
+}
+atomic void add_sugar(int id) {
+	cout << id << " add sugar to water\n";
+	++sweet;
+	cout << "sugar=" << sweet << endl;
+}
+atomic void go_to_kitchen(int id) {
+	int i;
+	cout << id << " going to kitchen\n";
+        for (i=0; i<20; ++i)
+		moveby(ICON_ROBOT1+id-1, 16, 2); 
+}
+atomic void take_sugar(int id) {
+	cout << id << " takes sugar\n";
+}
+atomic void go_to_glass(int id) {
+	cout << id << " go back to glass\n";
+}
+void robot(int id) {	
+	int t=0;
+	wait(s);
+	t=taste_glass_of_water(id);
+	if (t==0) {
+		go_to_kitchen(id);
+		take_sugar(id);
+		go_to_glass(id);
+		add_sugar(id);	
+	}
+	cout << id << " finished\n";
+	signal(s);
+}
+
+void main() {
+	create(ICON_KITCHEN , ANIMAGE, 0, 0,   50    , -1, -1);
+	create(ICON_CUPWATER, ANIMAGE, 0, 460, 250   , -1, -1);
+	create(ICON_ROBOT1  , ANIMAGE, 0, 50,  140   , -1, -1);
+	create(ICON_ROBOT2  , ANIMAGE, 0, 40,  140+SZ, -1, -1);
+	cobegin {
+		robot(1);
+		robot(2);
+	}
+}

@@ -1,0 +1,179 @@
+//Recursos compartidos
+#include "gdefs.cm"
+semaphore m;		//Semaforo que controla la creación de piezas de la máquina
+semaphore p;		//Semáforo que controla el acceso a las piezas
+semaphore r;		// Semáforo que controla al robot
+int piezas;		//Nº de piezas creadas
+const int N=3;		//Total de piezas que pueden haber en la cinta
+int piezascogidas;	//Total de piezas recogidas
+int paquete;		//Nº de paquetes creados que contienen 3 piezas cada uno
+int oper;		//Nº de veces que ha pasado el operario
+const int BG=20;	//Fondo Blanco de los gráficos
+int CIN=21;		//Cinta transportadora
+int P1=22;		//Pieza 1
+int P2=23;		//Pieza 2
+int P3=24;		//Pieza 3
+int ROBASE=25;		//Base del Robot
+int ROB=26;		//Robot
+int CABOP=27;		//Cabeza del perario
+int CUEOP=28;		//Cuerpo del operario
+int MAQ=29;		//Máquna
+
+void maquina(){
+	while(1){
+		wait(m);
+		wait(p);
+		if(piezas<N){//Antes de nada visualizar
+			if(piezas==0){
+				makevisible(P1,0);
+				makevisible(P2,0);
+				makevisible(P3,0);
+			}
+			if(piezas==1){
+				makevisible(P3,1);
+				
+			}
+			if(piezas==2){
+				makevisible(P2,1);
+				makevisible(P3,1);
+			}
+			if(piezas==3){
+				makevisible(P1,1);
+				makevisible(P2,1);
+				makevisible(P3,1);
+			}
+			piezas++;	//Pone una nueva pieza en la cinta
+			cout<<"Soy la máquina y añado una pieza. Hay "<< piezas << " piezas."<<endl;
+			//Se mueven las piezas desde donde se crean hasta el lugar que les corresponde
+			if(piezas==1){ 
+				moveto(MAQ,100,150);
+				changecolor(MAQ, BLUE);
+				makevisible(P1,1);
+				changecolor(MAQ, YELLOW);
+				moveto(MAQ,100,100);
+				makevisible(P1,0);
+				makevisible(P2,1);
+				makevisible(P2,0);
+				makevisible(P3,1);
+				
+			}
+			if(piezas==2){
+				moveto(MAQ,100,150);
+				changecolor(MAQ, BLUE);
+				makevisible(P1,1);
+				changecolor(MAQ, YELLOW);
+				moveto(MAQ,100,100);
+				makevisible(P1,0);
+				makevisible(P2,1);
+			}
+			if(piezas==3){
+				moveto(MAQ,100,150);
+				changecolor(MAQ, BLUE);
+				makevisible(P1,1);
+				changecolor(MAQ, YELLOW);
+				moveto(MAQ,100,100);
+			}
+		}
+		signal(p);
+		signal(r);	
+	}
+}
+
+void robot(){
+	while(1){
+		wait(r);
+		wait(p);
+		piezas--;		//Quita una pieza de la cinta
+		piezascogidas++;	//Pone una pieza en un paquete
+			if(piezas==-1){piezas=0;} //Para evitar errores de las piezas de más quitadas(piezas=-1)
+			//Una vez quitada la pieza quitarla y mover el resto a sus respectivas posiciones
+			if(piezas==0){
+				changecolor(ROB, GREEN);
+				moveto(ROB,500,100);
+				makevisible(P3,0);
+				moveto(ROB,500,50);
+				changecolor(ROB, RED);
+			}
+			if(piezas==1){
+				changecolor(ROB, GREEN);
+				moveto(ROB,500,100);
+				makevisible(P3,0);
+				moveto(ROB,500,50);
+				changecolor(ROB, RED);
+				makevisible(P2,0);
+				makevisible(P3,1);
+			}
+			if(piezas==2){
+				changecolor(ROB, GREEN);
+				moveto(ROB,500,100);
+				makevisible(P3,0);
+				moveto(ROB,500,50);
+				changecolor(ROB, RED);
+				makevisible(P2,0);
+				makevisible(P3,1);
+				makevisible(P1,0);
+				makevisible(P2,1);
+			}
+		cout << "Soy el robot y cojo una pieza para meterla a un paquete. Hay " << paquete << " paquetes." << endl;
+		signal(p);
+		signal(m);
+		if(piezascogidas==3){	//Cuando Se han cogido 3 piezas se completa un paquete
+			paquete++;
+			piezascogidas=0;
+		}
+	}
+}
+
+void operario(){
+	while(1){
+		wait(p);
+		if(piezas>=3){
+			piezas=piezas-3;
+			signal(m);signal(m);signal(m);
+			if(piezas==0){
+				moveto(CABOP,275,300);
+				moveto(CUEOP,300,350);
+				changecolor(CABOP,GREEN);
+				changecolor(CUEOP,GREEN);
+				makevisible(P1,0);
+				makevisible(P2,0);
+				makevisible(P3,0);
+				changecolor(CUEOP,RED);
+				changecolor(CABOP,RED);
+				moveto(CUEOP,300,400);
+				moveto(CABOP,275,350);
+			}
+			cout<<"Soy el operario y cojo 3 piezas para control de calidad"<<endl;
+			oper++;
+			if(oper==10){exit(-1);} // Cuando el operario haya pasado 10 veces el programa parará.
+		}
+		signal(p);
+	}
+}
+
+void main(){
+	create(BG,RECTANGLE, WHITE,0,0,600,450);	//Fondo de Pantalla
+	create(CIN, RECTANGLE, BLACK, 0,150,600,150);	//Cinta transportadora
+	create(ROBASE, RECTANGLE, BLUE, 450,50,100,50);	//Base del robot
+	create(ROB, TRIANGLE, RED, 500,50,100,50);	//Cabeza del Robot
+	create(MAQ, TRIANGLE, YELLOW, 100,100,50,-50);	//Maquina
+	create(CABOP,CIRCLE,RED,275,350,50,50);		//Cabeza del operario
+	create(CUEOP,TRIANGLE,RED,300,400,50,50);	//Cuerpo del operario
+	create(P1, RECTANGLE,MAGENTA,50,200,100,50);	//Pieza 1
+	create(P2, RECTANGLE,MAGENTA,250,200,100,50);	//Pieza 2
+	create(P3, RECTANGLE,MAGENTA,450,200,100,50);	//Pieza 3
+	initialsem(m, N);	//Se inicializa a la máquina con la constante N se bloqueará si es -1
+	initialsem(p,1);	//El semáforo de acceso a piezas se inicializa a 1 
+	initialsem(r,0);	//El semáforo del robot se inicializa a 0 para que se bloquee en el caso que sea -1
+	piezas=0;		//Inicializamos las piezas a 0
+	piezascogidas=0;	//Inicializamos las piezas que cogemos para un paquete a 0
+	paquete=0;		//Inicializamos los paquetes de la producción a 0
+	oper=0;			//Inicializamos las veces que un operario pasa revisión de piezas a 0
+	cobegin{
+		
+			maquina();
+			robot();
+			operario();
+		
+	}
+}

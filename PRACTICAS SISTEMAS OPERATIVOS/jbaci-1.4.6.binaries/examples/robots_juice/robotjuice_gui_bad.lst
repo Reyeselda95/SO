@@ -1,0 +1,78 @@
+BACI System: C-- to PCODE Compiler, 10/03/2010
+Source file: C:\programming\jbaci\examples\robots_juice\robotjuice_gui_bad.cm  Thu Mar 25 22:00:06 2010
+ line  pc
+   1    0  #include "../gdefs.cm"
+>   1    0  // Constants for jBACI graphcs
+>   2    0  const
+>   3    0     int RED   = 1; int BLACK   = 2; int BLUE  = 3; int YELLOW = 4;
+>   4    0     int GREEN = 5; int MAGENTA = 6; int WHITE = 7;
+>   5    0     
+>   6    0     int CIRCLE         = 1; 
+>   7    0     int LINE           = 2; 
+>   8    0     int RECTANGLE      = 3; 
+>   9    0     int TRIANGLE       = 4; 
+>  10    0     int ANIMAGE        = 5;
+>  11    0     int RNDRECT 		  = 6;
+>  12    0     int LINE_CIRCLE    = 21; 
+>  13    0     int LINE_RECTANGLE = 22; 
+>  14    0     int LINE_TRIANGLE  = 23; 
+>  15    0     int LINE_RNDRECT   = 24;
+>  16    0     int NUMBER_BOX     = 25;
+>  17    0     
+>  18    0  
+Returning to file C:\programming\jbaci\examples\robots_juice\robotjuice_gui_bad.cm
+   2    0  const int ICON_KITCHEN=1;
+   3    0  const int ICON_CUPWATER=2;
+   4    0  const int ICON_ROBOT1=3;
+   5    0  const int ICON_ROBOT2=4;
+   6    0  const int SZ=96;
+   7    0  
+   8    0  binarysem s=1;
+   9    0  int sweet=0;
+  10    0  
+  11    0  atomic int taste_glass_of_water(int id) {
+  12    0  	cout << id << " tastes the water\n";
+  13    3  	cout << "sugar=" << sweet << endl;
+  14    7  	return sweet;
+  15   11  }
+  16   12  atomic void add_sugar(int id) {
+  17   12  	cout << id << " add sugar to water\n";
+  18   15  	++sweet;
+  19   20  	cout << "sugar=" << sweet << endl;
+  20   24  }
+  21   25  atomic void go_to_kitchen(int id) {
+  22   25  	int i;
+  23   25  	cout << id << " going to kitchen\n";
+  24   28          for (i=0; i<20; ++i)
+  25   42  		moveby(ICON_ROBOT1+id-1, 16, 2); 
+  26   51  }
+  27   52  atomic void take_sugar(int id) {
+  28   52  	cout << id << " takes sugar\n";
+  29   55  }
+  30   56  atomic void go_to_glass(int id) {
+  31   56  	cout << id << " go back to glass\n";
+  32   59  }
+  33   60  void robot(int id) {	
+  34   60  	int t=0;
+  35   63  	//wait(s);
+  36   63  	t=taste_glass_of_water(id);
+  37   69  	if (t==0) {
+  38   73  		go_to_kitchen(id);
+  39   77  		take_sugar(id);
+  40   81  		go_to_glass(id);
+  41   85  		add_sugar(id);	
+  42   89  	}
+  43   89  	cout << id << " finished\n";
+  44   92  	//signal(s);
+  45   92  }
+  46   93  
+  47   93  void main() {
+  48   94  	create(ICON_KITCHEN , ANIMAGE, 0, 0,   50    , -1, -1);
+  49  104  	create(ICON_CUPWATER, ANIMAGE, 0, 460, 250   , -1, -1);
+  50  114  	create(ICON_ROBOT1  , ANIMAGE, 0, 50,  140   , -1, -1);
+  51  124  	create(ICON_ROBOT2  , ANIMAGE, 0, 40,  140+SZ, -1, -1);
+  52  136  	cobegin {
+  53  137  		robot(1);
+  54  141  		robot(2);
+  55  145  	}
+  56  146  }

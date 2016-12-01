@@ -1,0 +1,63 @@
+// Demonstate jBACI graphics; fragment of alien program.
+#include "../gdefs.cm"
+const
+    int BG = 20;
+	int ALIENHEAD = 21;	
+	int ALIENBODY = 22;
+	int MISSILEHEAD = 23; 	
+	int MISSILEBODY = 24;
+
+    binarysem s = 1;
+
+	void MoveAlien() {
+		int i;
+		for (i = 1; i < 40; i++) {
+			wait(s);
+			moveby(ALIENHEAD, 10, 0);
+			moveby(ALIENBODY, 10, 0);
+			signal(s);
+		}
+	}
+
+	void Shoot() {
+		int i;
+		for (i = 1; i < 40; i++) {
+			wait(s);
+			moveby(MISSILEHEAD, 0, -11);
+			moveby(MISSILEBODY, 0, -11);
+			signal(s); 
+		}
+	}
+
+void main() {
+	int i,j,k=0;
+	create(BG, RNDRECT, YELLOW, 0, 0, -1, -1); // Full Screen
+	create(ALIENBODY,   RECTANGLE, RED,   30, 50,  30, 30);
+	create(ALIENHEAD,   CIRCLE,    RED,   60, 50,  30, 30);	
+	create(MISSILEBODY, RECTANGLE, BLUE, 400, 400, 30, 50);
+	create(MISSILEHEAD, TRIANGLE,  BLUE, 415, 370, 30, 30);
+
+	create(29, ANIMAGE       , 0  , 120, 100, -1, -1);
+	create(30, LINE_RECTANGLE, RED, 20, 40 , 20, 20);
+	create(31, LINE_CIRCLE   , RED, 20, 60 , 20, 20);
+	create(32, LINE_TRIANGLE , RED, 20, 80 , 20, 20);
+	create(33, LINE_RNDRECT  , RED, 20, 100, 20, 20);
+	create(34, RNDRECT       , RED, 20, 120, 20, 20);
+	create(35, NUMBER_BOX    , GREEN , 20, 140, 20, 20);
+	create(36, NUMBER_BOX    , BLUE  , 20, 160, 40, 40);
+	create(37, NUMBER_BOX    , YELLOW, 20, 200, 60, 60);
+	create(38, NUMBER_BOX    , 10    , 20, 260, 80, 80); // use color 10
+
+	for (j=0; j<10; ++j) {
+		for (i=0; i<48; ++i) {
+			create(39+k, NUMBER_BOX, k, (i*10), 360+(j*10), 10, 10); 
+			++k;
+		}
+	}
+	
+
+	cobegin {
+		Shoot();
+		MoveAlien();
+	}
+}

@@ -1,0 +1,18 @@
+// Constants for jBACI graphcs
+const
+   int RED   = 1; int BLACK   = 2; int BLUE  = 3; int YELLOW = 4;
+   int GREEN = 5; int MAGENTA = 6; int WHITE = 7;
+   
+   int CIRCLE         = 1; 
+   int LINE           = 2; 
+   int RECTANGLE      = 3; 
+   int TRIANGLE       = 4; 
+   int ANIMAGE        = 5;
+   int RNDRECT 		  = 6;
+   int LINE_CIRCLE    = 21; 
+   int LINE_RECTANGLE = 22; 
+   int LINE_TRIANGLE  = 23; 
+   int LINE_RNDRECT   = 24;
+   int NUMBER_BOX     = 25;
+   
+

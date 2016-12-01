@@ -1,0 +1,91 @@
+#include "gdefs.cm"
+const int GRASS_ICON = 0;
+const int FIRST_HOLE_ICON=10;
+const int DIG_ICON=100; 
+const int PLANT_ICON=101; 
+const int COVER_ICON=102;
+
+semaphore s_plant = 0;
+semaphore s_dig = 0;
+binarysem s=1;
+
+const int SZ=64;
+const int max_holes = 12;
+int to_dig   = 0;
+int to_plant = 0;
+int to_cover = 0;
+
+int holes_y;
+int dig_y;
+int plant_y;
+int cover_y;
+int dx = SZ;
+int x[3];
+
+void dig() {	
+	int on_hole;
+	while (to_dig>0) {
+		wait(s); // Critical Section
+		--to_dig;
+		++to_plant;
+		moveby(DIG_ICON, dx, 0);		
+		on_hole=(x[0]-dx)/dx;
+		changecolor(FIRST_HOLE_ICON+on_hole, BLUE); // Turn Hole To Status: Digged
+		x[0]=x[0]+dx;
+		cout << "finished digging\n";
+		signal(s);
+		signal(s_dig);
+	}
+}
+
+void plant() {
+	int on_hole;
+	while ((to_dig>0) || (to_plant>0)) {
+                wait(s_dig);
+		wait(s); // Critical Section
+		--to_plant;
+		++to_cover;
+		moveby(PLANT_ICON, dx, 0);
+		on_hole=(x[1]-dx)/dx;
+		changecolor(FIRST_HOLE_ICON+on_hole, MAGENTA); // Turn Hole To Status: Planted
+		x[1]=x[1]+dx;
+		cout << "finished planting\n";
+		signal(s);
+		signal(s_plant);
+	}
+}
+
+void cover() {
+	int on_hole;
+	while ((to_dig>0) || (to_plant>0) || (to_cover>0)) {
+		wait(s_plant);
+		wait(s); // Critical Section
+		--to_cover;
+		moveby(COVER_ICON, dx, 0);
+		on_hole=(x[2]-dx)/dx;
+		changecolor(FIRST_HOLE_ICON+on_hole, GREEN); // Turn Hole To Status: Covered
+		x[2]=x[2]+dx;
+		cout << "finished covering\n";
+		signal(s);
+	}
+}
+
+void main() {
+	int i=0;
+	holes_y = 64*4;
+	for (i=0; i<3; ++i) x[i]=dx;
+	to_dig = max_holes;
+	dig_y = 64*4-SZ;
+	plant_y = dig_y-SZ;
+	cover_y = plant_y-SZ;
+	create(GRASS_ICON, ANIMAGE, 4, dx+dx-15, dx-10, SZ, SZ);
+	for (i=0; i<to_dig; ++i) create(FIRST_HOLE_ICON+i, CIRCLE, BLACK, dx+(i+1)*dx, holes_y, SZ, SZ);
+	create(DIG_ICON,   ANIMAGE, 1, dx, dig_y, SZ, SZ);
+	create(PLANT_ICON, ANIMAGE, 2, dx, plant_y, SZ, SZ);
+	create(COVER_ICON, ANIMAGE, 3, dx, cover_y, SZ, SZ);
+	cobegin {
+		dig();
+		plant();
+		cover();		
+	}
+}
